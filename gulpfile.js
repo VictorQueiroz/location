@@ -7,9 +7,9 @@ gulp.task('build', function() {
 	gulp.src(['src/*.js'])
 	.pipe(concat('location.js'))
 	.pipe(wrapper({
-		header: '(function($window) {',
-		footer: '$window.$location = {Location: Location, Browser: Browser};' +
-						'}($window));'
+		header: '(function() {',
+		footer: 'window.$location = {Location: Location, Browser: Browser};' +
+						'}());'
 	}))
 	.pipe(uglify())
 	.pipe(gulp.dest('build'));
