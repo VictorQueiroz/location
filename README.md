@@ -1,5 +1,8 @@
 # location
 
+### Dependencies
+- [eventemitter](https://github.com/VictorQueiroz/eventemitter)
+
 ### Installation
 ```
 bower install --save location
