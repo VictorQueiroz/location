@@ -1,21 +1,21 @@
-function isObject(value) {
-	return (value != null && typeof value == 'object');
-}
+function Location(browser) {
+	EventEmitter.call(this);
 
-function isUndefined(value) {
-	return typeof value == 'undefined';
-}
+	this.url_ = null;
+	this.browser = browser;
+	this.sync();
 
-function isNumber(value) {
-	return typeof value == 'number';
-}
+	var location = this;
 
-function isBoolean (value) {
-	return typeof value == 'boolean';
-}
+	this.onUrlChangeListener = function(url, oldUrl) {
+		location.sync();
 
-function isString(value) {
-	return typeof value == 'string';
+		if(!location.emit('locationChangeStart', location.url(), location.oldUrl)) {
+			location.url(oldUrl);
+		}
+	};
+
+	this.browser.on('urlChange', this.onUrlChangeListener);
 }
 
 Location.SEP = '?';
