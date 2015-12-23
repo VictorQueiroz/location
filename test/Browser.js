@@ -34,12 +34,20 @@ inherits(FakeWindow, EventEmitter, {
 });
 
 describe('Browser', function() {
-	var browser, fakeWindow = new FakeWindow();
+	var browser,
+      fakeWindow = new FakeWindow(),
+      listenerSpy = jasmine.createSpy();
 
 	beforeEach(function() {
-		browser = new Browser(fakeWindow);
+    browser = new Browser(fakeWindow);
+    browser.url('/');
+
+    listenerSpy = jasmine.createSpy();
 	});
 
+  afterEach(function() {
+    browser.removeAllListeners();
+  });
 	it('should detect hash changes and execute listeners', function() {
 		var onUrlChangeSpy = jasmine.createSpy();
 
@@ -57,4 +65,14 @@ describe('Browser', function() {
 
 		expect(fakeWindow.location.hash).toEqual('#/my/path/here');
 	});
+
+  it('should not emit "urlChange" event when replacing the hash', function() {
+    browser.on('urlChange', listenerSpy);
+
+    browser.url('/some/cool/url/here', 1);
+    expect(listenerSpy).not.toHaveBeenCalledWith('/some/cool/url/here', '/');
+
+    browser.url('/some/cool/url/here');
+    expect(listenerSpy).toHaveBeenCalledWith('/some/cool/url/here', '/');
+  });
 });

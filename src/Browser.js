@@ -15,7 +15,16 @@ function Browser (global) {
 	this.onHashChange_ = function() {
 		if(browser.url() !== browser.oldUrl) {
 			browser.sync();
-			browser.emit('urlChange', browser.url(), browser.oldUrl);
+
+      if(browser.replace === browser.url()) {
+        browser.replace = null;
+      } else {
+        if(browser.replace) {
+          browser.replace = null;
+        }
+
+        browser.emit('urlChange', browser.url(), browser.oldUrl);
+      }
 		}
 	};
 
@@ -23,11 +32,15 @@ function Browser (global) {
 }
 
 inherits(Browser, EventEmitter, {
-	url: function(url) {
+	url: function(url, replace) {
 		if(url) {
 			var global = this.global;
 
-			global.location.hash = url;
+      if(replace) {
+        this.replace = url;
+      }
+
+      global.location.hash = url;
 		} else {
 			return this.url_;
 		}
