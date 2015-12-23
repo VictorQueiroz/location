@@ -18,20 +18,43 @@ function Location(browser) {
 	this.browser.on('urlChange', this.onUrlChangeListener);
 }
 
-Location.SEP = '?';
+inherits(Location, EventEmitter, {
+	/**
+	 * Getter/setter
+	 *
+	 * Set/retrieve the entire url
+	 */
+	url: function(url) {
+		if(url) {
+			this.browser.url(url);
+		} else {
+			return this.url_;
+		}
 
-function Location(browser) {
-	this.browser = browser;
-}
+		return this;
+	},
 
-Location.prototype = {
-	// Replace only the path
+	search: function(search) {
+		var url = this.url().split('?');
+
+		if(isObject(search)) {
+			url[1] = QueryString.stringify(search);
+
+			this.url(url.join('?'));
+		} else {
+			return QueryString.parse(url[1]);
+		}
+
+		return this;
+	},
+
 	path: function(path) {
-		var url = this.url().split(Location.SEP);
+		var url = this.url().split('?');
 
 		if(path) {
 			url[0] = path;
-			this.url(url.join(Location.SEP));
+
+			this.url(url.join('?'));
 		} else {
 			return url[0];
 		}
@@ -39,27 +62,22 @@ Location.prototype = {
 		return this;
 	},
 
-	search: function(key, value) {
-		var url = this.url().split(Location.SEP);
+	/*
+	 * Keep the location service directly
+	 * updated with the browser service
+	 */
+	sync: function() {
+		var url = this.browser.url();
 
-		if(isUndefined(key)) {
-			url[1] = url[1] || '';
-			return QueryString.parse(url[1]);
-		} else if(isObject(key)) {
-			url[1] = QueryString.stringify(key);
-
-			this.url(url.join(Location.SEP));
+		if(url !== this.url_) {
+			this.oldUrl = this.url_;
+			this.url_ = url;
 		}
 
 		return this;
 	},
 
-	// Replace the entire url
-	url: function(url) {
-		if(url) {
-			this.browser.url(url);
-		} else {
-			return this.browser.url();
-		}
+	destroy: function() {
+
 	}
-};
+});

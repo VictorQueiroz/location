@@ -4,7 +4,12 @@ var concat = require('gulp-concat');
 var wrapper = require('gulp-wrapper');
 
 gulp.task('build', function() {
-	gulp.src(['src/*.js'])
+	gulp.src([
+		'bower_components/eventemitter/build/eventemitter.js',
+		'src/helpers.js',
+		'src/EventEmitter.js',
+		'src/*.js'
+	])
 	.pipe(concat('location.js'))
 	.pipe(wrapper({
 		header: '(function() {',
