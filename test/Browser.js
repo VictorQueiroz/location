@@ -48,14 +48,13 @@ describe('Browser', function() {
   afterEach(function() {
     browser.removeAllListeners();
   });
-	it('should detect hash changes and execute listeners', function() {
-		var onUrlChangeSpy = jasmine.createSpy();
 
-		browser.on('urlChange', onUrlChangeSpy);
+	it('should detect hash changes and execute listeners', function() {
+		browser.on('urlChange', listenerSpy);
 
 		fakeWindow.location.hash = '/test';
 
-		expect(onUrlChangeSpy).toHaveBeenCalledWith('/test', '/');
+		expect(listenerSpy).toHaveBeenCalledWith('/test', '/');
 	});
 
 	it('should set the hash url', function() {

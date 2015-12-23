@@ -16,50 +16,101 @@ describe('Location', function() {
 		location.removeAllListeners();
 	});
 
-	it('should emit "locationChangeStart" event when browser url changes', function() {
-		var listenerSpy = jasmine.createSpy();
-		location.on('locationChangeStart', function(a, b) {
-			listenerSpy(a, b);
-		});
+  describe('Events', function() {
+    var listenerSpy;
 
-		browser.url('/home/index');
-		browser.sync();
-		location.sync();
+    beforeEach(function() {
+      listenerSpy = jasmine.createSpy();
+    });
 
-		expect(listenerSpy).toHaveBeenCalledWith('/home/index', '/');
+    describe('locationChangeSuccess', function() {
+      it('should emit "locationChangeSuccess" when the location change finish', function() {
+        location.on('locationChangeSuccess', listenerSpy);
 
-		browser.url('/home');
-		browser.sync();
-		location.sync();
+        location.path('/settings');
+        browser.sync();
+        location.sync();
 
-		expect(listenerSpy).toHaveBeenCalledWith('/home', '/home/index');
-	});
+        expect(listenerSpy).toHaveBeenCalledWith('/settings', '/');
+      });
 
-	it('should prevent "locationChangeStart" and rollback to the old url', function() {
-		location.on('locationChangeStart', function(url, oldUrl) {
-			if(url !== '/' && url !== '/not-ignore-path') {
-				return false;
-			}
-		});
+      it('should not emit the "locationChangeSuccess" when the location is prevented by some listener', function() {
+        location.on('locationChangeStart', function(url, oldUrl) {
+          if(url !== '/' && url !== '/not-ignore-path') {
+            return false;
+          }
+        })
+        .on('locationChangeSuccess', listenerSpy);
 
-		browser.url('/home');
-		browser.sync();
-		location.sync();
+        browser.url('/home');
+        browser.sync();
+        location.sync();
 
-		expect(location.url()).toEqual('/');
+        expect(location.url()).toEqual('/');
+        expect(listenerSpy).not.toHaveBeenCalledWith('/home', '/');
 
-		location.url('/products?page=4');
-		browser.sync();
-		location.sync();
+        location.url('/products?page=4');
+        browser.sync();
+        location.sync();
 
-		expect(location.url()).toEqual('/');
+        expect(location.url()).toEqual('/');
+        expect(listenerSpy).not.toHaveBeenCalledWith('/products?page=4', '/');
 
-		location.url('/not-ignore-path');
-		browser.sync();
-		location.sync();
+        location.url('/not-ignore-path');
+        browser.sync();
+        location.sync();
 
-		expect(location.url()).toEqual('/not-ignore-path');
-	});
+        expect(location.url()).toEqual('/not-ignore-path');
+        expect(listenerSpy).toHaveBeenCalledWith('/not-ignore-path', '/');
+      });
+    });
+
+    describe('locationChangeStart', function() {
+    	it('should emit "locationChangeStart" event when browser url changes', function() {
+    		location.on('locationChangeStart', function(a, b) {
+    			listenerSpy(a, b);
+    		});
+
+    		browser.url('/home/index');
+    		browser.sync();
+    		location.sync();
+
+    		expect(listenerSpy).toHaveBeenCalledWith('/home/index', '/');
+
+    		browser.url('/home');
+    		browser.sync();
+    		location.sync();
+
+    		expect(listenerSpy).toHaveBeenCalledWith('/home', '/home/index');
+    	});
+
+    	it('should prevent "locationChangeStart" and rollback to the old url', function() {
+    		location.on('locationChangeStart', function(url, oldUrl) {
+    			if(url !== '/' && url !== '/not-ignore-path') {
+    				return false;
+    			}
+    		});
+
+    		browser.url('/home');
+    		browser.sync();
+    		location.sync();
+
+    		expect(location.url()).toEqual('/');
+
+    		location.url('/products?page=4');
+    		browser.sync();
+    		location.sync();
+
+    		expect(location.url()).toEqual('/');
+
+    		location.url('/not-ignore-path');
+    		browser.sync();
+    		location.sync();
+
+    		expect(location.url()).toEqual('/not-ignore-path');
+    	});
+    });
+  });
 
 	describe('search()', function() {
 		it('should add parameters to the hash sign', function() {

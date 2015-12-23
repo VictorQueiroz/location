@@ -10,9 +10,11 @@ function Location(browser) {
 	this.onUrlChangeListener = function(url, oldUrl) {
 		location.sync();
 
-		if(!location.emit('locationChangeStart', location.url(), location.oldUrl)) {
-			location.url(oldUrl);
-		}
+		if(location.emit('locationChangeStart', location.url(), location.oldUrl)) {
+      location.emit('locationChangeSuccess', location.url(), location.oldUrl);
+    } else {
+			location.url(oldUrl, 1);
+    }
 	};
 
 	this.browser.on('urlChange', this.onUrlChangeListener);
@@ -24,9 +26,9 @@ inherits(Location, EventEmitter, {
 	 *
 	 * Set/retrieve the entire url
 	 */
-	url: function(url) {
+	url: function(url, replace) {
 		if(url) {
-			this.browser.url(url);
+			this.browser.url(url, replace);
 		} else {
 			return this.url_;
 		}
@@ -48,13 +50,13 @@ inherits(Location, EventEmitter, {
 		return this;
 	},
 
-	path: function(path) {
+	path: function(path, replace) {
 		var url = this.url().split('?');
 
 		if(path) {
 			url[0] = path;
 
-			this.url(url.join('?'));
+			this.url(url.join('?'), replace);
 		} else {
 			return url[0];
 		}
@@ -78,6 +80,6 @@ inherits(Location, EventEmitter, {
 	},
 
 	destroy: function() {
-
+    this.browser.off('urlChange', this.onUrlChangeListener);
 	}
 });
